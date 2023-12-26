@@ -1,0 +1,13 @@
+---
+source: tests/compiles.rs
+expression: code
+---
+package literals
+
+func helloWorld() (string) {
+	return "hello, world"
+}
+
+func theAnswer() (int) {
+	return 42
+}
