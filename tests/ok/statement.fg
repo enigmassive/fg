@@ -1,0 +1,16 @@
+package statement
+
+func statements() int {
+	var a = 0
+	var b = 1
+	{
+		if true {
+			a = b
+		} else if false {
+			b = a
+		} else {
+			a = 42
+		}
+	}
+	return a
+}

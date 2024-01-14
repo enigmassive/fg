@@ -1,0 +1,29 @@
+---
+source: tests/ok.rs
+expression: code
+---
+package operator
+
+func deref(val *Value) (Value) {
+	return *val
+}
+
+func borrow(val Value) (*Value) {
+	return &val
+}
+
+func deref_deref(val **Value) (Value) {
+	return **val
+}
+
+func deref_borrow(val Value) (Value) {
+	return *&val
+}
+
+func borrow_deref(val *Value) (*Value) {
+	return &*val
+}
+
+func borrow_borrow(val Value) (**Value) {
+	return &&val
+}

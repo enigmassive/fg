@@ -1,0 +1,22 @@
+package expression
+
+func expressions() {
+	var a = f(0)
+	var b = 0
+	b, a = h(f(1), (f(2)))
+}
+
+func f(a int) (b int) {
+	return a
+}
+
+func g(a int, b int) (c int, d int) {
+	c = b
+	d = a
+	return c, d
+}
+
+func h(a int, b int) (int, int) {
+	var c, d = g(a, b)
+	return c, d
+}

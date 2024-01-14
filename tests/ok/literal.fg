@@ -1,0 +1,9 @@
+package literal
+
+func helloWorld() string {
+	return "hello, world"
+}
+
+func theAnswer() int {
+	return 42
+}

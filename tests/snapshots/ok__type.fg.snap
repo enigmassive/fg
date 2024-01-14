@@ -1,0 +1,14 @@
+---
+source: tests/ok.rs
+expression: code
+---
+package type
+
+func reference(val *Value) {
+}
+
+func function(func(), func() string, func(string, func(string) (int, bool)) bool, func(int)) {
+}
+
+func tuple() (int, bool) {
+}

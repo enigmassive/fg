@@ -1,0 +1,35 @@
+---
+source: tests/ok.rs
+expression: code
+---
+package parameter
+
+func noParameters() {
+}
+
+func withParameter(a int) {
+}
+
+func withParameters(a int, b bool) {
+}
+
+func withUnnamedParameter(int) {
+}
+
+func withUnnamedParameters(int, bool) {
+}
+
+func withReturn(a int, b string) (c bool) {
+}
+
+func withReturns(a int, b string) (c bool, d error) {
+}
+
+func withUnnamedReturn(a int, b string) (bool) {
+}
+
+func withUnnamedReturns(a int, b string) (bool, error) {
+}
+
+func withNakedReturn(a int, b string) (bool) {
+}
