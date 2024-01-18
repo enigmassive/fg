@@ -2,6 +2,7 @@ mod ast;
 mod codegen;
 mod parse;
 mod typecheck;
+mod util;
 
 use std::io;
 

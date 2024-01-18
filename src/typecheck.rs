@@ -13,6 +13,7 @@ use crate::ast::operator::UnaryOp;
 use crate::ast::r#type::Type;
 use crate::ast::statement::{ElseStmt, IfStmt, Statement};
 use crate::ast::Package;
+use crate::util::assert_or;
 
 use self::scope::{FunctionScope, TopLevelScope};
 
@@ -98,9 +99,7 @@ fn check_var_assign(scope: &mut FunctionScope, names: Vec<Name>, expr: Expressio
         Type::ReturnTypes(expr_types) => expr_types,
         _ => vec![expr_type],
     };
-    if names.len() != expr_types.len() {
-        return Err(Error::WrongAssignCount);
-    }
+    assert_or!(names.len() == expr_types.len(), Error::WrongAssignCount)?;
 
     iter::zip(names, expr_types)
         .into_iter()
@@ -153,14 +152,10 @@ fn check_arguments(
         } => Ok((param_types, return_types)),
         _ => Err(Error::InvalidCall),
     }?;
+    assert_or!(args.len() == param_types.len(), Error::WrongArgCount)?;
 
-    if args.len() != param_types.len() {
-        return Err(Error::WrongArgCount);
-    }
     let arg_types = check_expressions(scope, args)?;
-    if arg_types != param_types {
-        return Err(Error::IncompatibleAssign);
-    }
+    assert_or!(arg_types == param_types, Error::IncompatibleAssign)?;
 
     if return_types.len() == 1 {
         return Ok(return_types.swap_remove(0));
@@ -189,10 +184,10 @@ fn check_borrow(scope: &FunctionScope, unary_expr: UnaryExpr) -> Result<Type> {
 }
 
 fn check_assignment(scope: &FunctionScope, lhs: Vec<Expression>, rhs: Expression) -> Result<()> {
-    if !lhs.iter().all(expression_is_assignable) {
-        return Err(Error::UnassignableOperand);
-    }
-
+    assert_or!(
+        lhs.iter().all(expression_is_assignable),
+        Error::UnassignableOperand
+    )?;
     let lhs_types = lhs
         .into_iter()
         .map(|expr| check_expression(scope, expr))
@@ -203,13 +198,9 @@ fn check_assignment(scope: &FunctionScope, lhs: Vec<Expression>, rhs: Expression
         Type::ReturnTypes(rhs_types) => rhs_types,
         _ => vec![rhs_type],
     };
+    assert_or!(lhs_types.len() == rhs_types.len(), Error::WrongAssignCount)?;
+    assert_or!(lhs_types == rhs_types, Error::IncompatibleAssign)?;
 
-    if lhs_types.len() != rhs_types.len() {
-        return Err(Error::WrongAssignCount);
-    }
-    if lhs_types != rhs_types {
-        return Err(Error::IncompatibleAssign);
-    }
     Ok(())
 }
 
@@ -238,13 +229,12 @@ fn check_return_stmt(scope: &FunctionScope, exprs: Vec<Expression>) -> Result<()
     }
 
     let return_types = scope.return_types().to_vec();
+    assert_or!(
+        expr_types.len() == return_types.len(),
+        Error::WrongResultCount
+    )?;
+    assert_or!(expr_types == return_types, Error::IncompatibleAssign)?;
 
-    if expr_types.len() != return_types.len() {
-        return Err(Error::WrongResultCount);
-    }
-    if expr_types != return_types {
-        return Err(Error::IncompatibleAssign);
-    }
     Ok(())
 }
 
@@ -252,9 +242,7 @@ fn check_if_stmt(scope: &FunctionScope, if_stmt: IfStmt) -> Result<()> {
     let scope = scope.derive_env();
 
     let cond_type = check_expression(&scope, if_stmt.condition)?;
-    if cond_type != builtin::bool() {
-        return Err(Error::InvalidCond);
-    }
+    assert_or!(cond_type == builtin::bool(), Error::InvalidCond)?;
 
     check_block(&scope, if_stmt.block)?;
 
