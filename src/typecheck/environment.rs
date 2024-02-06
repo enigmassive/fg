@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use crate::ast::name::Name;
-use crate::ast::r#type::Type;
 
-use super::predeclared;
+use super::predeclared::predeclared;
+use super::r#type::Type;
 
 #[derive(Debug, Default)]
 pub struct Environment<'package> {
@@ -24,7 +24,7 @@ impl<'package> Environment<'package> {
     }
 
     pub fn value_type(&self, name: &Name) -> Option<Type> {
-        if let Some(r#type) = predeclared::predeclared().get(name) {
+        if let Some(r#type) = predeclared().get(name) {
             return Some(r#type.to_owned());
         }
         self.value_types

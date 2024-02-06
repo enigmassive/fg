@@ -10,7 +10,7 @@ use crate::ast::expression::{Expression, PrimaryExpr, UnaryExpr};
 use crate::ast::literal::Literal;
 use crate::ast::name::Name;
 use crate::ast::operator::UnaryOp;
-use crate::ast::r#type::Type;
+use crate::ast::r#type::{Type as AstType, TypeLit};
 use crate::ast::statement::{ElseStmt, IfStmt, Statement};
 use crate::ast::Package;
 
@@ -54,7 +54,7 @@ fn function_decl() -> impl Parser<Token, FunctionDecl, Error = Simple<Token>> {
 }
 
 fn parameters(
-    r#type: impl Parser<Token, Type, Error = Simple<Token>> + Clone,
+    r#type: impl Parser<Token, AstType, Error = Simple<Token>> + Clone,
 ) -> impl Parser<Token, Parameters, Error = Simple<Token>> {
     let unnamed_params = r#type
         .clone()
@@ -81,7 +81,7 @@ fn parameters(
 }
 
 fn returns(
-    r#type: impl Parser<Token, Type, Error = Simple<Token>> + Clone,
+    r#type: impl Parser<Token, AstType, Error = Simple<Token>> + Clone,
 ) -> impl Parser<Token, Parameters, Error = Simple<Token>> {
     let naked_type = r#type
         .clone()
@@ -102,21 +102,24 @@ fn block() -> impl Parser<Token, Vec<Statement>, Error = Simple<Token>> {
     })
 }
 
-fn r#type() -> impl Parser<Token, Type, Error = Simple<Token>> + Clone {
+fn r#type() -> impl Parser<Token, AstType, Error = Simple<Token>> + Clone {
     recursive(|r#type| {
-        let type_name = name().map(Type::TypeName);
+        let type_name = name().map(AstType::TypeName);
 
         let reference_type = just(Token::Symbol(Symbol::Ampersand))
             .ignore_then(r#type.clone())
             .map(Box::new)
-            .map(Type::ReferenceType);
+            .map(TypeLit::ReferenceType)
+            .map(AstType::TypeLit);
 
         let func_type = just(Token::Keyword(Keyword::Func))
             .ignore_then(parameters(r#type.clone()))
             .then(returns(r#type.clone()))
-            .map(|(params, returns)| Type::FunctionType {
-                param_types: params.into_types(),
-                return_types: returns.into_types(),
+            .map(|(params, returns)| {
+                AstType::TypeLit(TypeLit::FunctionType {
+                    param_types: params.into_types(),
+                    return_types: returns.into_types(),
+                })
             });
 
         choice((type_name, reference_type, func_type))

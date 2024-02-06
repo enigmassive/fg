@@ -7,7 +7,7 @@ use crate::ast::expression::{Expression, PrimaryExpr, UnaryExpr};
 use crate::ast::literal::Literal;
 use crate::ast::name::Name;
 use crate::ast::operator::UnaryOp;
-use crate::ast::r#type::Type;
+use crate::ast::r#type::{Type as AstType, TypeLit};
 use crate::ast::statement::{ElseStmt, IfStmt, Statement};
 use crate::ast::Package;
 
@@ -70,27 +70,28 @@ fn gen_name(name: Name) -> Token {
     Token::String(name.0)
 }
 
-fn gen_types(types: Vec<Type>) -> Vec<Token> {
+fn gen_types(types: Vec<AstType>) -> Vec<Token> {
     types.into_iter().map(gen_type).collect()
 }
 
-fn gen_type(r#type: Type) -> Token {
+fn gen_type(r#type: AstType) -> Token {
     match r#type {
-        Type::TypeName(name) => gen_name(name),
-        Type::ReferenceType(r#type) => gen_reference_type(*r#type),
-        Type::FunctionType {
-            param_types,
-            return_types,
-        } => gen_function_type(param_types, return_types),
-        Type::ReturnTypes(_) => panic!("matching ReturnTypes on gen_type"),
+        AstType::TypeName(name) => gen_name(name),
+        AstType::TypeLit(type_lit) => match type_lit {
+            TypeLit::ReferenceType(inner_type) => gen_reference_type(*inner_type),
+            TypeLit::FunctionType {
+                param_types,
+                return_types,
+            } => gen_function_type(param_types, return_types),
+        },
     }
 }
 
-fn gen_reference_type(r#type: Type) -> Token {
+fn gen_reference_type(r#type: AstType) -> Token {
     Token::Vec(vec![Token::Str("*"), gen_type(r#type)])
 }
 
-fn gen_function_type(param_types: Vec<Type>, mut return_types: Vec<Type>) -> Token {
+fn gen_function_type(param_types: Vec<AstType>, mut return_types: Vec<AstType>) -> Token {
     let mut tokens = vec![Token::Vec(vec![
         Token::Str("func"),
         Token::List(Delimiter::Paren, gen_types(param_types)),
@@ -131,7 +132,7 @@ fn gen_return_stmt(exprs: Vec<Expression>) -> Token {
     ])
 }
 
-fn gen_var_decl(name: Name, r#type: Type) -> Token {
+fn gen_var_decl(name: Name, r#type: AstType) -> Token {
     Token::SpaceSeparated(vec![Token::Str("var"), gen_name(name), gen_type(r#type)])
 }
 

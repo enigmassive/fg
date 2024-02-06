@@ -2,8 +2,9 @@ use std::collections::HashMap;
 use std::sync::OnceLock;
 
 use crate::ast::name::Name;
-use crate::ast::r#type::Type;
 use crate::typecheck::builtin;
+
+use super::r#type::Type;
 
 pub fn predeclared() -> &'static HashMap<Name, Type> {
     static PREDECLARED: OnceLock<HashMap<Name, Type>> = OnceLock::new();

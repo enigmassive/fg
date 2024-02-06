@@ -2,6 +2,7 @@ mod builtin;
 mod environment;
 mod predeclared;
 mod scope;
+mod r#type;
 
 use std::iter;
 
@@ -10,11 +11,12 @@ use crate::ast::expression::{Expression, PrimaryExpr, UnaryExpr};
 use crate::ast::literal::Literal;
 use crate::ast::name::Name;
 use crate::ast::operator::UnaryOp;
-use crate::ast::r#type::Type;
+use crate::ast::r#type::{Type as AstType, TypeLit};
 use crate::ast::statement::{ElseStmt, IfStmt, Statement};
 use crate::ast::Package;
 use crate::util::assert_or;
 
+use self::r#type::Type;
 use self::scope::{FunctionScope, TopLevelScope};
 
 type Result<T> = std::result::Result<T, Error>;
@@ -50,10 +52,10 @@ fn register_function_decls(scope: &mut TopLevelScope, func_decls: Vec<FunctionDe
 }
 
 fn register_function_decl(scope: &mut TopLevelScope, func_decl: FunctionDecl) {
-    let func_type = Type::FunctionType {
+    let func_type = Type::from(AstType::TypeLit(TypeLit::FunctionType {
         param_types: func_decl.params.into_types(),
         return_types: func_decl.returns.into_types(),
-    };
+    }));
     scope.env_mut().register_value(func_decl.name, func_type);
 }
 
@@ -88,8 +90,8 @@ fn check_statement(scope: &mut FunctionScope, stmt: Statement) -> Result<()> {
     }
 }
 
-fn check_var_decl(scope: &mut FunctionScope, name: Name, r#type: Type) -> Result<()> {
-    let existing_name = scope.env_mut().register_value(name, r#type);
+fn check_var_decl(scope: &mut FunctionScope, name: Name, r#type: AstType) -> Result<()> {
+    let existing_name = scope.env_mut().register_value(name, Type::from(r#type));
     existing_name.map_or(Ok(()), |_| Err(Error::NoNewVar))
 }
 
@@ -253,4 +255,24 @@ fn check_if_stmt(scope: &FunctionScope, if_stmt: IfStmt) -> Result<()> {
         }
     }
     Ok(())
+}
+
+impl From<AstType> for Type {
+    fn from(ast_type: AstType) -> Type {
+        match ast_type {
+            AstType::TypeName(name) => Type::TypeName(name),
+            AstType::TypeLit(type_lit) => match type_lit {
+                TypeLit::ReferenceType(inner_type) => {
+                    Type::ReferenceType(Box::new(Type::from(*inner_type)))
+                }
+                TypeLit::FunctionType {
+                    param_types,
+                    return_types,
+                } => Type::FunctionType {
+                    param_types: param_types.into_iter().map(Into::into).collect(),
+                    return_types: return_types.into_iter().map(Into::into).collect(),
+                },
+            },
+        }
+    }
 }

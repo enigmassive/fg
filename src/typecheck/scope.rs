@@ -1,7 +1,7 @@
 use crate::ast::declaration::{NamedParam, Parameters};
-use crate::ast::r#type::Type;
 
 use super::environment::Environment;
+use super::r#type::Type;
 
 #[derive(Debug, Default)]
 pub struct TopLevelScope<'package> {
@@ -18,19 +18,18 @@ impl<'package> TopLevelScope<'package> {
 
         if let Parameters::Named(named_params) = params {
             for NamedParam(name, r#type) in named_params {
-                env.register_value(name, r#type);
+                env.register_value(name, Type::from(r#type));
             }
         }
         if let Parameters::Named(named_params) = returns.clone() {
             for NamedParam(name, r#type) in named_params {
-                env.register_value(name, r#type);
+                env.register_value(name, Type::from(r#type));
             }
         }
 
-        FunctionScope {
-            env,
-            return_types: returns.into_types(),
-        }
+        let return_types = returns.into_types().into_iter().map(Into::into).collect();
+
+        FunctionScope { env, return_types }
     }
 }
 

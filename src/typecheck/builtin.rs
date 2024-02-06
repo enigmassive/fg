@@ -1,5 +1,6 @@
 use crate::ast::name::Name;
-use crate::ast::r#type::Type;
+
+use super::r#type::Type;
 
 pub fn bool() -> Type {
     Type::TypeName(Name("bool".to_owned()))
