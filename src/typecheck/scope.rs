@@ -17,12 +17,12 @@ impl<'package> TopLevelScope<'package> {
         let mut env = self.env.derive();
 
         if let Parameters::Named(named_params) = params {
-            for NamedParam(name, r#type) in named_params {
+            for NamedParam { name, r#type } in named_params {
                 env.register_value(name, Type::from(r#type));
             }
         }
         if let Parameters::Named(named_params) = returns.clone() {
-            for NamedParam(name, r#type) in named_params {
+            for NamedParam { name, r#type } in named_params {
                 env.register_value(name, Type::from(r#type));
             }
         }

@@ -9,8 +9,5 @@ pub enum Type {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TypeLit {
     ReferenceType(Box<Type>),
-    FunctionType {
-        param_types: Vec<Type>,
-        return_types: Vec<Type>,
-    },
+    FunctionType(Vec<Type>, Vec<Type>),
 }

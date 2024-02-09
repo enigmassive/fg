@@ -52,10 +52,10 @@ fn register_function_decls(scope: &mut TopLevelScope, func_decls: Vec<FunctionDe
 }
 
 fn register_function_decl(scope: &mut TopLevelScope, func_decl: FunctionDecl) {
-    let func_type = Type::from(AstType::TypeLit(TypeLit::FunctionType {
-        param_types: func_decl.params.into_types(),
-        return_types: func_decl.returns.into_types(),
-    }));
+    let func_type = Type::from(AstType::TypeLit(TypeLit::FunctionType(
+        func_decl.params.into_types(),
+        func_decl.returns.into_types(),
+    )));
     scope.env_mut().register_value(func_decl.name, func_type);
 }
 
@@ -148,10 +148,7 @@ fn check_arguments(
     let callee_type = check_expression(scope, expr)?;
 
     let (param_types, mut return_types) = match callee_type {
-        Type::FunctionType {
-            param_types,
-            return_types,
-        } => Ok((param_types, return_types)),
+        Type::FunctionType(param_types, return_types) => Ok((param_types, return_types)),
         _ => Err(Error::InvalidCall),
     }?;
     assert_or!(args.len() == param_types.len(), Error::WrongArgCount)?;
@@ -265,13 +262,10 @@ impl From<AstType> for Type {
                 TypeLit::ReferenceType(inner_type) => {
                     Type::ReferenceType(Box::new(Type::from(*inner_type)))
                 }
-                TypeLit::FunctionType {
-                    param_types,
-                    return_types,
-                } => Type::FunctionType {
-                    param_types: param_types.into_iter().map(Into::into).collect(),
-                    return_types: return_types.into_iter().map(Into::into).collect(),
-                },
+                TypeLit::FunctionType(param_types, return_types) => Type::FunctionType(
+                    param_types.into_iter().map(Into::into).collect(),
+                    return_types.into_iter().map(Into::into).collect(),
+                ),
             },
         }
     }

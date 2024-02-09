@@ -54,7 +54,7 @@ fn gen_parameters(params: Parameters) -> Token {
 }
 
 fn gen_named_param(named_param: NamedParam) -> Token {
-    let NamedParam(name, r#type) = named_param;
+    let NamedParam { name, r#type } = named_param;
     Token::SpaceSeparated(vec![gen_name(name), gen_type(r#type)])
 }
 
@@ -79,10 +79,9 @@ fn gen_type(r#type: AstType) -> Token {
         AstType::TypeName(name) => gen_name(name),
         AstType::TypeLit(type_lit) => match type_lit {
             TypeLit::ReferenceType(inner_type) => gen_reference_type(*inner_type),
-            TypeLit::FunctionType {
-                param_types,
-                return_types,
-            } => gen_function_type(param_types, return_types),
+            TypeLit::FunctionType(param_types, return_types) => {
+                gen_function_type(param_types, return_types)
+            }
         },
     }
 }

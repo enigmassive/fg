@@ -4,9 +4,6 @@ use crate::ast::name::Name;
 pub enum Type {
     TypeName(Name),
     ReferenceType(Box<Type>),
-    FunctionType {
-        param_types: Vec<Type>,
-        return_types: Vec<Type>,
-    },
+    FunctionType(Vec<Type>, Vec<Type>),
     ReturnTypes(Vec<Type>),
 }

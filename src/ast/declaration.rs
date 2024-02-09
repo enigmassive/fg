@@ -17,7 +17,10 @@ pub enum Parameters {
 }
 
 #[derive(Debug, Clone)]
-pub struct NamedParam(pub Name, pub Type);
+pub struct NamedParam {
+    pub name: Name,
+    pub r#type: Type,
+}
 
 impl Parameters {
     pub fn into_types(self) -> Vec<Type> {
@@ -25,7 +28,7 @@ impl Parameters {
             Parameters::Unnamed(types) => types,
             Parameters::Named(named_params) => named_params
                 .into_iter()
-                .map(|NamedParam(_, r#type)| r#type)
+                .map(|NamedParam { r#type, .. }| r#type)
                 .collect(),
         }
     }

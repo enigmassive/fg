@@ -65,7 +65,7 @@ fn parameters(
     let named_params = {
         let named_param = name()
             .then(r#type.clone())
-            .map(|(name, r#type)| NamedParam(name, r#type));
+            .map(|(name, r#type)| NamedParam { name, r#type });
         named_param
             .separated_by(just(Token::Symbol(Symbol::Comma)))
             .collect::<Vec<_>>()
@@ -116,10 +116,10 @@ fn r#type() -> impl Parser<Token, AstType, Error = Simple<Token>> + Clone {
             .ignore_then(parameters(r#type.clone()))
             .then(returns(r#type.clone()))
             .map(|(params, returns)| {
-                AstType::TypeLit(TypeLit::FunctionType {
-                    param_types: params.into_types(),
-                    return_types: returns.into_types(),
-                })
+                AstType::TypeLit(TypeLit::FunctionType(
+                    params.into_types(),
+                    returns.into_types(),
+                ))
             });
 
         choice((type_name, reference_type, func_type))
